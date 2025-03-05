@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Silly Tavern AI 설정</title>
+  <link rel="stylesheet" href="style_drawer.css" />
+  <script defer src="index.js"></script>
+</head>
+<body>
+  <div class="settings-container">
+    <div class="toggle-header" id="drawer-toggle">AI 설정 <span class="toggle-icon">▼</span></div>
+    
+    <div id="settings-content" class="collapsed">
+      <label class="flex-container">
+        <input type="checkbox" id="use_main_api"> 메인 API 사용
+      </label>
+
+      <label for="llm_provider">LLM 제공자</label>
+      <select id="llm_provider">
+        <option value="openai">OpenAI</option>
+        <option value="claude">Claude</option>
+        <option value="cohere">Cohere</option>
+        <option value="google">Google AI</option>
+      </select>
+
+      <label for="llm_model">사용할 모델</label>
+      <select id="llm_model"></select>
+      
+      <div class="parameter-settings">
+        <h3>파라미터 설정</h3>
+        <div class="parameter-group" id="openai_params">
+          <label>Max Response Length</label>
+          <input type="range" id="max_length_openai" min="0" max="4000" step="1">
+          
+          <label>Temperature</label>
+          <input type="range" id="temperature_openai" min="0" max="2" step="0.01">
+        </div>
+      </div>
+      
+      <div class="regex-settings">
+        <h3>정규식 조절</h3>
+        <textarea id="regex_rules" placeholder="기본 정규식 패턴"></textarea>
+      </div>
+      
+      <label for="update_frequency">업데이트 주기 (1.0 = 매 regenerate)</label>
+      <input type="number" id="update_frequency" min="0" max="1" step="0.1" value="1.0">
+
+      <button id="apply_settings">설정 적용</button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("drawer-toggle").addEventListener("click", function() {
+      const content = document.getElementById("settings-content");
+      content.classList.toggle("collapsed");
+    });
+    
+    document.getElementById("use_main_api").addEventListener("change", function() {
+      const disabled = this.checked;
+      document.getElementById("llm_provider").disabled = disabled;
+      document.getElementById("llm_model").disabled = disabled;
+      document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
+    });
+  </script>
+</body>
+</html>
