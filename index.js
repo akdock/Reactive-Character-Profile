@@ -1,3 +1,4 @@
+
 // 전역 변수: stat 색상은 최초 API 호출 시 결정되어 이후에도 동일하게 사용
 let fixedStatColor = null;
 
@@ -301,3 +302,22 @@ async function llmTranslate(text, prompt) {
   나머지 기존 summarization, 설정, 이벤트 관련 함수들은 이 확장에서 사용하지 않으므로 생략합니다.
   (실제 확장에 포함된 코드를 참고하여 필요한 부분만 추가하세요.)
 */
+document.addEventListener("DOMContentLoaded", function() {
+  const toggleButton = document.getElementById("drawer-toggle");
+  const settingsContent = document.getElementById("settings-content");
+  const toggleIcon = toggleButton.querySelector(".inline-drawer-icon");
+
+  toggleButton.addEventListener("click", function() {
+      settingsContent.classList.toggle("hidden");
+      settingsContent.classList.toggle("visible");
+      toggleIcon.classList.toggle("fa-circle-chevron-down");
+      toggleIcon.classList.toggle("fa-circle-chevron-up");
+  });
+
+  document.getElementById("use_main_api").addEventListener("change", function() {
+      const disabled = this.checked;
+      document.getElementById("llm_provider").disabled = disabled;
+      document.getElementById("llm_model").disabled = disabled;
+      document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
+  });
+});

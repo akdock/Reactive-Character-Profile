@@ -282,3 +282,41 @@ body {
   flex: 1;
   width: 50%; /* 오른쪽 영역 차지 */
 }
+
+/* Drawer 스타일 */
+.inline-drawer {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  padding: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.inline-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.2em;
+  font-weight: bold;
+  padding: 10px;
+}
+
+.inline-drawer-icon {
+  font-size: 1.2em;
+  transition: transform 0.3s ease-in-out;
+}
+
+.inline-drawer-content {
+  display: none;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.inline-drawer-content.visible {
+  display: block;
+}
+
+.hidden {
+  display: none;
+}
