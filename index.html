@@ -1,17 +1,11 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Silly Tavern AI 설정</title>
-  <link rel="stylesheet" href="style_drawer.css" />
-  <script defer src="index.js"></script>
-</head>
-<body>
-  <div class="settings-container">
-    <div class="toggle-header" id="drawer-toggle">AI 설정 <span class="toggle-icon">▼</span></div>
+<div class="profile_ext_settings">
+  <div class="inline-drawer">
+    <div class="inline-drawer-toggle inline-drawer-header" id="drawer-toggle">
+      <b>AI 설정</b>
+      <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+    </div>
     
-    <div id="settings-content" class="collapsed">
+    <div class="inline-drawer-content collapsed" id="settings-content">
       <label class="flex-container">
         <input type="checkbox" id="use_main_api"> 메인 API 사용
       </label>
@@ -49,19 +43,18 @@
       <button id="apply_settings">설정 적용</button>
     </div>
   </div>
+</div>
 
-  <script>
-    document.getElementById("drawer-toggle").addEventListener("click", function() {
-      const content = document.getElementById("settings-content");
-      content.classList.toggle("collapsed");
-    });
-    
-    document.getElementById("use_main_api").addEventListener("change", function() {
-      const disabled = this.checked;
-      document.getElementById("llm_provider").disabled = disabled;
-      document.getElementById("llm_model").disabled = disabled;
-      document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
-    });
-  </script>
-</body>
-</html>
+<script>
+  document.getElementById("drawer-toggle").addEventListener("click", function() {
+    const content = document.getElementById("settings-content");
+    content.classList.toggle("collapsed");
+  });
+  
+  document.getElementById("use_main_api").addEventListener("change", function() {
+    const disabled = this.checked;
+    document.getElementById("llm_provider").disabled = disabled;
+    document.getElementById("llm_model").disabled = disabled;
+    document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
+  });
+</script>
