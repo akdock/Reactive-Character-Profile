@@ -21,12 +21,12 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 });
 
-document.getElementById("use_main_api").addEventListener("change", function() {
-  const disabled = this.checked;
-  document.getElementById("llm_provider").disabled = disabled;
-  document.getElementById("llm_model").disabled = disabled;
-  document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
-});
+// document.getElementById("use_main_api").addEventListener("change", function() {
+//   const disabled = this.checked;
+//   document.getElementById("llm_provider").disabled = disabled;
+//   document.getElementById("llm_model").disabled = disabled;
+//   document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
+// });
 // 설정을 불러오거나 기본값으로 초기화
 async function loadSettings() {
   extension_settings[extensionName] = extension_settings[extensionName] || {};
