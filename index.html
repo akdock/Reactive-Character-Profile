@@ -2,10 +2,10 @@
   <div class="inline-drawer">
     <div class="inline-drawer-toggle inline-drawer-header" id="drawer-toggle">
       <b>AI 설정</b>
-      <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+      <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
     </div>
     
-    <div class="inline-drawer-content collapsed" id="settings-content">
+    <div class="inline-drawer-content hidden" id="settings-content">
       <label class="flex-container">
         <input type="checkbox" id="use_main_api"> 메인 API 사용
       </label>
@@ -46,9 +46,16 @@
 </div>
 
 <script>
-  document.getElementById("drawer-toggle").addEventListener("click", function() {
-    const content = document.getElementById("settings-content");
-    content.classList.toggle("collapsed");
+  document.addEventListener("DOMContentLoaded", function() {
+    const toggleButton = document.getElementById("drawer-toggle");
+    const settingsContent = document.getElementById("settings-content");
+    const toggleIcon = toggleButton.querySelector(".inline-drawer-icon");
+
+    toggleButton.addEventListener("click", function() {
+      settingsContent.classList.toggle("hidden");
+      toggleIcon.classList.toggle("fa-circle-chevron-down");
+      toggleIcon.classList.toggle("fa-circle-chevron-up");
+    });
   });
   
   document.getElementById("use_main_api").addEventListener("change", function() {
@@ -58,3 +65,7 @@
     document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
   });
 </script>
+
+<style>
+  .hidden { display: none; }
+</style>
