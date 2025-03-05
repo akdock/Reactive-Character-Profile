@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Silly Tavern AI 설정</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style_drawer.css" />
 </head>
 <body>
   <div class="settings-container">
@@ -46,7 +46,11 @@
         statPrompt: document.getElementById("stat_prompt").value,
         throttleDelay: document.getElementById("throttle_delay").value
       };
-      
+            
+      const { extensionSettings, saveSettingsDebounced } = SillyTavern.getContext();
+      extensionSettings["silly_tavern_ai_settings"] = settings;
+      saveSettingsDebounced();
+   
       console.log("설정 적용:", settings);
       alert("설정이 적용되었습니다.");
     });
