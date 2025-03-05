@@ -1,0 +1,284 @@
+/* 기본 폰트: Noto Sans KR */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+/* ANDONG264TTF 폰트 (User에 대한 생각, 관계 텍스트) */
+@font-face {
+  font-family: 'ANDONG264TTF';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2502-1@1.0/ANDONG264TTF.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  background-color: #f5f5f5;
+  font-family: 'Noto Sans KR', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.character-card {
+  width: 580px;
+  background-color: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+
+/* 헤더 */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fdfdfd;
+  padding: 14px 20px;
+  border-bottom: 1px solid #eee;
+}
+.header-left {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #4B3F6B;
+}
+.header-right {
+  font-size: 0.95rem;
+  color: #888;
+}
+
+/* 본문 */
+.card-body {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+.body1 {
+  margin-top: 20px;
+  display: flex;
+  align-items: center; /* 세로 중앙 정렬 */
+  justify-content: center ; 
+
+}
+
+/* 프로필 사진 */
+.profile-image-container {
+  width: 120px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;  /* 원하시면 윤곽선 적용 */
+  box-shadow: 0 0 0 2px #fff;
+  background-color: #fff;  /* 컨테이너 배경색 */
+  
+}
+
+.profile-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;  
+  border-radius: 10px; /* 이미지 모서리 둥글게 */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* 기본 그림자 효과 */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* 부드러운 효과 */
+}
+
+
+.profile-image:hover {
+  transform: translateY(-5px); /* 마우스를 올리면 살짝 떠오름 */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* 그림자 강조 */
+}
+
+
+/* 정보 영역 */
+.info-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 30px;
+}
+
+/* 섹션 타이틀 */
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #4B3F6B;
+}
+
+/* 현재 기분 섹션 */
+.mood-section .mood-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.mood-tag {
+  background-color: #f6e9ff;
+  color: #7e3ac8;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+/* 호감도 및 관계 */
+.affection-section .affection-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+.hearts-container {
+  position: relative;
+  display: flex;
+  gap: 5px;
+}
+.heart {
+  width: 22px;
+  height: 22px;
+  background-size: cover;
+  transition: transform 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+.heart:hover {
+  transform: scale(1.15);
+}
+/* 기본 pixel art 하트 (회색) */
+.heart {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24'%3E%3Cpath fill='%23cccccc' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-2.76 2.24-5 5-5 1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3c2.76 0 5 2.24 5 5 0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+}
+.heart.filled {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff70c0' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-2.76 2.24-5 5-5 1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3c2.76 0 5 2.24 5 5 0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+}
+.heart.partial::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--fill-percent, 0%);
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff70c0' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-2.76 2.24-5 5-5 1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3c2.76 0 5 2.24 5 5 0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+  background-size: cover;
+  pointer-events: none;
+}
+.heart.broken {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24'%3E%3Cpath fill='%23000000' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-2.76 2.24-5 5-5 1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3c2.76 0 5 2.24 5 5 0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+}
+.heart.partial-broken::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--fill-percent, 0%);
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24'%3E%3Cpath fill='%23000000' d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-2.76 2.24-5 5-5 1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3c2.76 0 5 2.24 5 5 0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+  background-size: cover;
+  pointer-events: none;
+}
+
+/* 하트 툴팁 */
+.heart-tooltip {
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0,0,0,0.7);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 10;
+}
+.hearts-container:hover .heart-tooltip {
+  opacity: 1;
+}
+
+/* 관계 텍스트 (ANDONG264TTF 적용) */
+.relationship-doodle {
+  font-family: 'ANDONG264TTF', sans-serif;
+  font-size: 1.2rem;
+  color: #c259dd;
+}
+
+/* User에 대한 생각 영역 (ANDONG264TTF 적용) */
+.thoughts-section .thoughts-content {
+  font-family: 'ANDONG264TTF', sans-serif;
+  font-size: 1rem;
+  line-height: 1.4;
+  background-color: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 120px;
+  margin-top: 20px;
+}
+
+/* 스탯 섹션 */
+.stats-section {
+  margin-top: 0px;
+}
+.stat-item {
+  margin-bottom: 14px;
+}
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+  color: #333;
+}
+.stat-bar {
+  position: relative;
+  height: 12px;
+  background-color: #f0e7ff;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.stat-bar-fill {
+  height: 100%;
+  background-color: #a66afc;
+  width: 0%;
+  transition: width 1s ease-in-out;
+}
+.stat-tooltip {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0,0,0,0.7);
+  color: #fff;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.stat-bar:hover .stat-tooltip {
+  opacity: 1;
+}
+
+/* 취소선 */
+.strikethrough {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.body2 {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px; /* 요소 간격 */
+}
+
+/* User에 대한 생각 */
+.thoughts-section {
+  flex: 1;
+  width: 50%; /* 왼쪽 영역 차지 */
+}
+
+/* 스탯 창 */
+.stats-section {
+  flex: 1;
+  width: 50%; /* 오른쪽 영역 차지 */
+}

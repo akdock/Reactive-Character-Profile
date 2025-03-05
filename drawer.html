@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Silly Tavern AI 설정</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="settings-container">
+    <h2>AI 설정</h2>
+    
+    <label for="llm_provider">LLM 제공자</label>
+    <select id="llm_provider">
+      <option value="openai">OpenAI</option>
+      <option value="claude">Claude</option>
+      <option value="cohere">Cohere</option>
+      <option value="google">Google AI</option>
+    </select>
+    
+    <label for="llm_model">사용할 모델</label>
+    <select id="llm_model"></select>
+    
+    <label for="mood_prompt">기분 프롬프트</label>
+    <textarea id="mood_prompt" placeholder="기분을 조정하는 프롬프트"></textarea>
+    
+    <label for="affection_prompt">호감도 프롬프트</label>
+    <textarea id="affection_prompt" placeholder="호감도를 조정하는 프롬프트"></textarea>
+    
+    <label for="stat_prompt">스탯 프롬프트</label>
+    <textarea id="stat_prompt" placeholder="스탯을 조정하는 프롬프트"></textarea>
+    
+    <label for="throttle_delay">AI 응답 딜레이 (ms)</label>
+    <input type="number" id="throttle_delay" min="0" value="500" step="100" />
+    
+    <button id="apply_settings">설정 적용</button>
+  </div>
+
+  <script>
+    document.getElementById("apply_settings").addEventListener("click", function() {
+      const settings = {
+        provider: document.getElementById("llm_provider").value,
+        model: document.getElementById("llm_model").value,
+        moodPrompt: document.getElementById("mood_prompt").value,
+        affectionPrompt: document.getElementById("affection_prompt").value,
+        statPrompt: document.getElementById("stat_prompt").value,
+        throttleDelay: document.getElementById("throttle_delay").value
+      };
+      
+      console.log("설정 적용:", settings);
+      alert("설정이 적용되었습니다.");
+    });
+  </script>
+</body>
+</html>
