@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>캐릭터 상태창</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="character-card">
+    <!-- 헤더: 이름|나이 / 요일|시간 -->
+    <div class="card-header">
+      <div class="header-left" id="character-name">홍길동 | 25</div>
+      <div class="header-right" id="character-time">월요일 | 14:30</div>
+    </div>
+    <div class="card-body body1">
+      <!-- 왼쪽 절반: 프로필 사진 -->
+      <div class="profile-image-container" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+        <img id="profile-image" src="https://via.placeholder.com/120x160" alt="프로필 사진">
+      </div>
+      <!-- 오른쪽 절반: 정보 영역 (왼쪽 정렬) -->
+      <div class="info-area" style="flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: left;">
+        <!-- 현재 기분 섹션 -->
+        <div class="mood-section">
+          <div class="section-title">현재 기분</div>
+          <div class="mood-tags" id="mood-tags">
+            <!-- 예: 행복, 호기심, 😫 한숨 (API 결과) -->
+          </div>
+        </div>
+          <!-- 호감도 + 관계 -->
+        <div class="affection-section">
+          <div class="section-title">호감도</div>
+          <div class="affection-wrapper">
+            <div class="hearts-container" id="hearts-container">
+              <div class="heart-tooltip" id="heart-tooltip">28/100</div>
+              <div class="heart" data-index="0"></div>
+              <div class="heart" data-index="1"></div>
+              <div class="heart" data-index="2"></div>
+              <div class="heart" data-index="3"></div>
+              <div class="heart" data-index="4"></div>
+            </div>
+            <div class="relationship-doodle" id="relationship-doodle">
+              짜증나는 애송이
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 본문 body2: User에 대한 생각 + 스탯 -->
+    <div class="card-body body2">
+      <div class="body-left thoughts-section">
+        <div class="section-title"> </div>
+        <div class="thoughts-content" id="thoughts-content">
+          User에 대한 생각을 적는 영역입니다... <span class="strikethrough">지워진 부분</span>
+        </div>
+      </div>
+      <div class="body-right stats-section">
+        <div class="section-title">스탯</div>
+        <div id="stat-container">
+          <!-- API가 제시한 stat 특성이 표시됨 -->
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="index.js"></script>
+</body>
+</html>

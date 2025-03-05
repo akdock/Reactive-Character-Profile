@@ -1,7 +1,11 @@
 {
   "display_name": "Reactive Character Profile",
+  "loading_order": 9,
+  "requires": [],
+  "optional": [],
+  "js": "index.js",
   "version": "1.0",
   "description": "AI 기반 반응형 캐릭터 프로필 확장 기능",
-  "author": "Your Name",
-  "js": "index.js"
+  "author": "tincan"
+
 }
