@@ -52,7 +52,7 @@ function onUpdateFrequencyChange(event) {
 
 // 확장 로드 시 실행
 jQuery(async () => {
-  const settingsHtml = await $.get(`${extensionFolderPath}/drawer.html`);
+  const settingsHtml = await $.get(`${extensionFolderPath}/index.html`);
   $("#extensions_settings").append(settingsHtml);
 
   // 이벤트 리스너 추가
