@@ -308,7 +308,7 @@ body {
 }
 
 .inline-drawer-content {
-  display: none;
+
   padding: 10px;
   border-top: 1px solid #ddd;
 }
@@ -320,3 +320,5 @@ body {
 .hidden {
   display: none;
 }
+/* 펼치면 보이게 */
+.visible { display: block; }

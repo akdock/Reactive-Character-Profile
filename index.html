@@ -8,7 +8,10 @@
     </div>
     <div class="inline-drawer-content hidden" id="settings-content">
       <label class="flex-container">
+        <p>여기에 내가 펼칠 옵션/설정 내용</p>
         <input type="checkbox" id="use_main_api"> 메인 API 사용
+        <br>
+        <button>테스트 버튼</button>
       </label>
 
       <label for="llm_provider">LLM 제공자</label>
@@ -46,28 +49,5 @@
   </div>
 </div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const toggleButton = document.getElementById("drawer-toggle");
-    const settingsContent = document.getElementById("settings-content");
-    const toggleIcon = toggleButton.querySelector(".inline-drawer-icon");
 
-    toggleButton.addEventListener("click", function() {
-      settingsContent.classList.toggle("hidden");
-      settingsContent.classList.toggle("visible"); 
-      toggleIcon.classList.toggle("fa-circle-chevron-down");
-      toggleIcon.classList.toggle("fa-circle-chevron-up");
-    });
-  });
-  
-  document.getElementById("use_main_api").addEventListener("change", function() {
-    const disabled = this.checked;
-    document.getElementById("llm_provider").disabled = disabled;
-    document.getElementById("llm_model").disabled = disabled;
-    document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
-  });
-</script>
 
-<style>
-  .hidden { display: none; }
-</style>

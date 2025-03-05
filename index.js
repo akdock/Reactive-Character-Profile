@@ -8,6 +8,25 @@ const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
 const extensionSettings = extension_settings[extensionName];
 const defaultSettings = {};
 
+document.addEventListener("DOMContentLoaded", function() {
+  const toggleButton = document.getElementById("drawer-toggle");
+  const settingsContent = document.getElementById("settings-content");
+  const toggleIcon = toggleButton.querySelector(".inline-drawer-icon");
+
+  toggleButton.addEventListener("click", function() {
+    settingsContent.classList.toggle("hidden");
+    settingsContent.classList.toggle("visible"); 
+    toggleIcon.classList.toggle("fa-circle-chevron-down");
+    toggleIcon.classList.toggle("fa-circle-chevron-up");
+  });
+});
+
+document.getElementById("use_main_api").addEventListener("change", function() {
+  const disabled = this.checked;
+  document.getElementById("llm_provider").disabled = disabled;
+  document.getElementById("llm_model").disabled = disabled;
+  document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
+});
 // 설정을 불러오거나 기본값으로 초기화
 async function loadSettings() {
   extension_settings[extensionName] = extension_settings[extensionName] || {};
