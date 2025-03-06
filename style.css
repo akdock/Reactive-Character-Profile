@@ -317,8 +317,6 @@ body {
   display: block;
 }
 .inline-drawer-content button.menu_button {
-  width: fit-content;
-  flex-direction: row;
   justify-content: center;
   white-space: nowrap;   /* 줄바꿈 방지 추가 */
 }
