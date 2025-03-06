@@ -316,7 +316,7 @@ body {
 .inline-drawer-content.visible {
   display: block;
 }
-.menu_button {
+.profile_ext_settings button.menu_button {
   display: inline-flex !important;  /* ✅ 가로 정렬 유지 */
   flex-direction: row !important;  /* ✅ 가로 정렬 강제 */
   align-items: center !important;  /* ✅ 세로 중앙 정렬 */
