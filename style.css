@@ -321,6 +321,7 @@ body {
   display: flex;
   gap: 10px;
   flex-direction: row;
+  white-space: nowrap;
 }
 
 .inline-drawer-content button.drawer-button:hover {
