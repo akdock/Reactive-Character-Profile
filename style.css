@@ -318,10 +318,12 @@ body {
 }
 .inline-drawer-content button.menu_button {
   width: fit-content;
-  display: flex;
+  display: inline-flex;  /* inline-flex 사용 */
   gap: 10px;
   flex-direction: row;
-  writing-mode: horizontal-tb !important;
+  align-items: center;   /* 세로 중앙 정렬 */
+  justify-content: center;
+  white-space: nowrap;   /* 줄바꿈 방지 추가 */
 }
 
 .inline-drawer-content button.drawer-button:hover {
