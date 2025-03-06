@@ -318,7 +318,6 @@ body {
 }
 .inline-drawer-content button.menu_button {
   width: fit-content;
-  display: inline-flex;  /* inline-flex 사용 */
   gap: 10px;
   flex-direction: row;
   align-items: center;   /* 세로 중앙 정렬 */

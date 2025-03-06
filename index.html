@@ -5,13 +5,15 @@
       <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
     </div>
     <div class="inline-drawer-content" id="settings-content">
-      <label class="flex-container">
+      <label>
         <p>여기에 내가 펼칠 옵션/설정 내용</p>
         <input type="checkbox" id="use_main_api"> 메인 API 사용
-        <br>
-        <button class="menu_button"><span>테스트 버튼</span></button>
       </label>
-
+    
+      <button class="menu_button">
+        테스트 버튼
+      </button>
+    
       <label for="llm_provider">LLM 제공자</label>
       <select id="llm_provider">
         <option value="openai">OpenAI</option>
@@ -19,30 +21,38 @@
         <option value="cohere">Cohere</option>
         <option value="google">Google AI</option>
       </select>
-
+    
       <label for="llm_model">사용할 모델</label>
       <select id="llm_model"></select>
-      
+    
       <div class="parameter-settings">
         <h3>파라미터 설정</h3>
         <div class="parameter-group" id="openai_params">
           <label>Max Response Length</label>
           <input type="range" id="max_length_openai" min="0" max="4000" step="1">
-          
+    
           <label>Temperature</label>
           <input type="range" id="temperature_openai" min="0" max="2" step="0.01">
         </div>
       </div>
-      
+    
       <div class="regex-settings">
         <h3>정규식 조절</h3>
         <textarea id="regex_rules" placeholder="기본 정규식 패턴"></textarea>
       </div>
-      
+    
       <label for="update_frequency">업데이트 주기 (1.0 = 매 regenerate)</label>
       <input type="number" id="update_frequency" min="0" max="1" step="0.1" value="1.0">
-
-      <button id="apply_settings" class="menu_button"><span>설정 적용</span></button>
-    </div>
-  </div>
+    
+      <button id="apply_settings" class="menu_button">
+        <span>설정 적용</span>
+      </button>
+    
+      <!-- 독립된 div로 감싸서 button을 독립된 요소로 구성 -->
+      <div class="menu_button">
+        <button class="menu_button">
+          <span>테스트 버튼</span>
+        </button>
+      </div>
+    </div>    
 </div>
