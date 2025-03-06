@@ -317,13 +317,17 @@ body {
   display: block;
 }
 .inline-drawer-content button.menu_button {
-  display: inline-flex; /* 버튼 내용을 가로로 유지 */
-  align-items: center; /* 세로 정렬 */
-  justify-content: center; /* 가로 중앙 정렬 */
-  white-space: nowrap; /* 줄바꿈 방지 */
-  width: auto; /* 버튼 크기를 자동으로 조절 */
+  display: inline-flex !important;  /* ✅ 가로 정렬 유지 */
+  flex-direction: row !important;  /* ✅ 가로 정렬 강제 */
+  align-items: center !important;  /* ✅ 세로 중앙 정렬 */
+  justify-content: center !important;  /* ✅ 가로 중앙 정렬 */
+  white-space: nowrap !important;  /* ✅ 줄바꿈 방지 */
+  width: auto !important;  /* ✅ 크기 자동 조절 */
 }
-
+.inline-drawer-content button.menu_button span {
+  display: inline !important;  /* ✅ 가로 정렬 유지 */
+  white-space: nowrap !important;  /* ✅ 줄바꿈 방지 */
+}
 .inline-drawer-content button.drawer-button:hover {
   background-color: #3a3457;  /* 호버 시 약간 어두운 색상 */
 }
