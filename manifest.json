@@ -4,7 +4,7 @@
   "requires": [],
   "optional": [],
   "js": "index.js",
-  "css": "style.css"
+  "css": "style.css",
   "version": "1.0",
   "description": "AI 기반 반응형 캐릭터 프로필 확장 기능",
   "author": "tincan"
