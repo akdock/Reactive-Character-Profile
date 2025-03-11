@@ -1,52 +1,7 @@
 
 
 /* Drawer 스타일 */
-.inline-drawer {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: white;
-  padding: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.menu_button {
+  white-space:nowrap; 
 }
 
-.inline-drawer-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  font-size: 1.2em;
-  font-weight: bold;
-  padding: 10px;
-}
-
-.inline-drawer-icon {
-  font-size: 1.2em;
-  transition: transform 0.3s ease-in-out;
-}
-
-.inline-drawer-content {
-
-  padding: 10px;
-  border-top: 1px solid #ddd;
-}
-
-.inline-drawer-content.visible {
-  display: block;
-}
-.profile_ext_settings button.menu_button {
-  display: inline-flex !important;  /* ✅ 가로 정렬 유지 */
-  flex-direction: row !important;  /* ✅ 가로 정렬 강제 */
-  align-items: center !important;  /* ✅ 세로 중앙 정렬 */
-  justify-content: center !important;  /* ✅ 가로 중앙 정렬 */
-  white-space: nowrap !important;  /* ✅ 줄바꿈 방지 */
-  width: auto !important;  /* ✅ 크기 자동 조절 */
-}
-
-.inline-drawer-content button.drawer-button:hover {
-  background-color: #3a3457;  /* 호버 시 약간 어두운 색상 */
-}
-.hidden {
-  display: none;
-}
-/* 펼치면 보이게 */
-.visible { display: block; }

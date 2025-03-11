@@ -1,5 +1,3 @@
-<script>
-
 function applyDynamicFont() {
   // "속마음" 영역에 적용
   // 영어 폰트 목록

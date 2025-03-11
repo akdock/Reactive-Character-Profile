@@ -5,47 +5,142 @@
       <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
     </div>
     <div class="inline-drawer-content" id="settings-content">
-      <label>
-        <p>여기에 내가 펼칠 옵션/설정 내용</p>
-        <input type="checkbox" id="use_main_api"> 메인 API 사용
-      </label>
     
       <button class="menu_button">
         <span data-i18n="api_test">테스트 버튼</span>
       </button>
     
-      <label for="llm_provider">LLM 제공자</label>
-      <select id="llm_provider">
+      <label for="profile_provider">프로필 제공자</label>
+      <select id="profile_provider">
         <option value="openai">OpenAI</option>
         <option value="claude">Claude</option>
+        <option value="google">GoogleAI</option>
         <option value="cohere">Cohere</option>
-        <option value="google">Google AI</option>
+        <option value="deepseek">Deepseek</option>
       </select>
     
-      <label for="llm_model">사용할 모델</label>
-      <select id="llm_model"></select>
+      <label for="profile_model">모델 선택:</label>
+      <select id="profile_model"></select>
     
-      <div class="parameter-settings">
-        <h3>파라미터 설정</h3>
-        <div class="parameter-group" id="openai_params">
-          <label>Max Response Length</label>
-          <input type="range" id="max_length_openai" min="0" max="4000" step="1">
-    
-          <label>Temperature</label>
-          <input type="range" id="temperature_openai" min="0" max="2" step="0.01">
+      <!-- 파라미터 설정 영역 -->
+      <div class="profile-parameter">
+        <label>파라미터 설정</label>
+        
+        <!-- OpenAI 파라미터 그룹 -->
+        <div class="parameter-group openai_params">
+          <label for="max_length_openai">Max Response Length</label>
+          <input type="range" id="max_length_openai" class="neo-range-slider" data-param="max_length" min="0" max="4000" step="1">
+          <input type="number" id="max_length_openai_input" class="neo-range-input" data-param="max_length" min="0" max="4000" step="1">
+          
+          <label for="temperature_openai">Temperature</label>
+          <input type="range" id="temperature_openai" class="neo-range-slider" data-param="temperature" min="0" max="2" step="0.01">
+          <input type="number" id="temperature_openai_input" class="neo-range-input" data-param="temperature" min="0" max="2" step="0.01">
+          
+          <label for="frequency_penalty_openai">Frequency Penalty</label>
+          <input type="range" id="frequency_penalty_openai" class="neo-range-slider" data-param="frequency_penalty" min="0" max="2" step="0.1">
+          <input type="number" id="frequency_penalty_openai_input" class="neo-range-input" data-param="frequency_penalty" min="0" max="2" step="0.1">
+          
+          <label for="presence_penalty_openai">Presence Penalty</label>
+          <input type="range" id="presence_penalty_openai" class="neo-range-slider" data-param="presence_penalty" min="0" max="2" step="0.1">
+          <input type="number" id="presence_penalty_openai_input" class="neo-range-input" data-param="presence_penalty" min="0" max="2" step="0.1">
+          
+          <label for="top_p_openai">Top-P</label>
+          <input type="range" id="top_p_openai" class="neo-range-slider" data-param="top_p" min="0" max="1" step="0.01">
+          <input type="number" id="top_p_openai_input" class="neo-range-input" data-param="top_p" min="0" max="1" step="0.01">
+        </div>
+        
+        <!-- Claude 파라미터 그룹 -->
+        <div class="parameter-group claude_params">
+          <label for="max_length_claude">Max Response Length</label>
+          <input type="range" id="max_length_claude" class="neo-range-slider" data-param="max_length" min="0" max="4000" step="1">
+          <input type="number" id="max_length_claude_input" class="neo-range-input" data-param="max_length" min="0" max="4000" step="1">
+          
+          <label for="temperature_claude">Temperature</label>
+          <input type="range" id="temperature_claude" class="neo-range-slider" data-param="temperature" min="0" max="2" step="0.01">
+          <input type="number" id="temperature_claude_input" class="neo-range-input" data-param="temperature" min="0" max="2" step="0.01">
+          
+          <label for="top_k_claude">Top-K</label>
+          <input type="range" id="top_k_claude" class="neo-range-slider" data-param="top_k" min="0" max="100" step="1">
+          <input type="number" id="top_k_claude_input" class="neo-range-input" data-param="top_k" min="0" max="100" step="1">
+          
+          <label for="top_p_claude">Top-P</label>
+          <input type="range" id="top_p_claude" class="neo-range-slider" data-param="top_p" min="0" max="1" step="0.01">
+          <input type="number" id="top_p_claude_input" class="neo-range-input" data-param="top_p" min="0" max="1" step="0.01">
+        </div>
+        
+        <!-- Cohere 파라미터 그룹 -->
+        <div class="parameter-group cohere_params">
+          <label for="max_length_cohere">Max Response Length</label>
+          <input type="range" id="max_length_cohere" class="neo-range-slider" data-param="max_length" min="0" max="4000" step="1">
+          <input type="number" id="max_length_cohere_input" class="neo-range-input" data-param="max_length" min="0" max="4000" step="1">
+          
+          <label for="temperature_cohere">Temperature</label>
+          <input type="range" id="temperature_cohere" class="neo-range-slider" data-param="temperature" min="0" max="2" step="0.01">
+          <input type="number" id="temperature_cohere_input" class="neo-range-input" data-param="temperature" min="0" max="2" step="0.01">
+          
+          <label for="frequency_penalty_cohere">Frequency Penalty</label>
+          <input type="range" id="frequency_penalty_cohere" class="neo-range-slider" data-param="frequency_penalty" min="0" max="2" step="0.1">
+          <input type="number" id="frequency_penalty_cohere_input" class="neo-range-input" data-param="frequency_penalty" min="0" max="2" step="0.1">
+          
+          <label for="presence_penalty_cohere">Presence Penalty</label>
+          <input type="range" id="presence_penalty_cohere" class="neo-range-slider" data-param="presence_penalty" min="0" max="2" step="0.1">
+          <input type="number" id="presence_penalty_cohere_input" class="neo-range-input" data-param="presence_penalty" min="0" max="2" step="0.1">
+          
+          <label for="top_k_cohere">Top-K</label>
+          <input type="range" id="top_k_cohere" class="neo-range-slider" data-param="top_k" min="0" max="100" step="1">
+          <input type="number" id="top_k_cohere_input" class="neo-range-input" data-param="top_k" min="0" max="100" step="1">
+          
+          <label for="top_p_cohere">Top-P</label>
+          <input type="range" id="top_p_cohere" class="neo-range-slider" data-param="top_p" min="0" max="1" step="0.01">
+          <input type="number" id="top_p_cohere_input" class="neo-range-input" data-param="top_p" min="0" max="1" step="0.01">
+        </div>
+        
+        <!-- Google 파라미터 그룹 -->
+        <div class="parameter-group google_params">
+          <label for="max_length_google">Max Response Length</label>
+          <input type="range" id="max_length_google" class="neo-range-slider" data-param="max_length" min="0" max="4000" step="1">
+          <input type="number" id="max_length_google_input" class="neo-range-input" data-param="max_length" min="0" max="4000" step="1">
+          
+          <label for="temperature_google">Temperature</label>
+          <input type="range" id="temperature_google" class="neo-range-slider" data-param="temperature" min="0" max="2" step="0.01">
+          <input type="number" id="temperature_google_input" class="neo-range-input" data-param="temperature" min="0" max="2" step="0.01">
+          
+          <label for="top_k_google">Top-K</label>
+          <input type="range" id="top_k_google" class="neo-range-slider" data-param="top_k" min="0" max="100" step="1">
+          <input type="number" id="top_k_google_input" class="neo-range-input" data-param="top_k" min="0" max="100" step="1">
+          
+          <label for="top_p_google">Top-P</label>
+          <input type="range" id="top_p_google" class="neo-range-slider" data-param="top_p" min="0" max="1" step="0.01">
+          <input type="number" id="top_p_google_input" class="neo-range-input" data-param="top_p" min="0" max="1" step="0.01">
+        </div>
+        <!-- Deepseek 파라미터 그룹 -->
+        <div class="parameter-group deepseek_params">
+          <label for="max_length_deepseek">Max Response Length</label>
+          <input type="range" id="max_length_deepseek" class="neo-range-slider" data-param="max_length" min="0" max="4000" step="1">
+          <input type="number" id="max_length_deepseek_input" class="neo-range-input" data-param="max_length" min="0" max="4000" step="1">
+          
+          <label for="temperature_deepseek">Temperature</label>
+          <input type="range" id="temperature_deepseek" class="neo-range-slider" data-param="temperature" min="0" max="2" step="0.01">
+          <input type="number" id="temperature_deepseek_input" class="neo-range-input" data-param="temperature" min="0" max="2" step="0.01">
+          
+          <label for="top_k_deepseek">Top-K</label>
+          <input type="range" id="top_k_deepseek" class="neo-range-slider" data-param="top_k" min="0" max="100" step="1">
+          <input type="number" id="top_k_deepseek_input" class="neo-range-input" data-param="top_k" min="0" max="100" step="1">
+          
+          <label for="top_p_deepseek">Top-P</label>
+          <input type="range" id="top_p_deepseek" class="neo-range-slider" data-param="top_p" min="0" max="1" step="0.01">
+          <input type="number" id="top_p_deepseek_input" class="neo-range-input" data-param="top_p" min="0" max="1" step="0.01">
         </div>
       </div>
-    
-      <div class="regex-settings">
-        <h3>정규식 조절</h3>
-        <textarea id="regex_rules" placeholder="기본 정규식 패턴"></textarea>
-      </div>
-    
-      <label for="update_frequency">업데이트 주기 (1.0 = 매 regenerate)</label>
-      <input type="number" id="update_frequency" min="0" max="1" step="0.1" value="1.0">
-    
-      <button id="apply_settings" class="menu_button">
-        <span data-i18n="profile_api_setting">설정 적용</span>
-      </button>
+
+      <label for="profile_regex">정규식 조절</label>
+      <textarea id="profile_regex" placeholder="기본 정규식 패턴"></textarea>
+
+      <label for="profile_html">정규식 HTML</label>
+      <textarea id="profile_html" placeholder="정규식 적용할 HTML"></textarea>
+
+      <label for="profile_prompt">정규식 프롬프트</label>
+      <textarea id="profile_prompt" placeholder="정규식 지시사항"></textarea>
+    </div>
     </div>    
 </div>

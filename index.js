@@ -1,408 +1,476 @@
-// 필요한 모듈 가져오기
-import { extension_settings, getContext, loadExtensionSettings } from "../../../extensions.js";
-import { saveSettingsDebounced } from "../../../../script.js";
-
-// 확장 이름 및 경로 설정
+import { extension_settings, getContext } from '../../../extensions.js';
+import { 
+  saveSettingsDebounced, 
+  generateRaw as originalGenerateRaw, updateMessageBlock, 
+  getRequestHeaders, 
+  eventSource, 
+  event_types,
+  reloadCurrentChat,
+  substituteParams, addOneMessage, setExtensionPrompt,  getExtensionPrompt, extension_prompt_types, extension_prompt_roles } from "../../../../script.js";
+import { settingsToUpdate, chat_completion_sources, getChatCompletionModel } from "../../../openai.js";
+import { secret_state, SECRET_KEYS, readSecretState } from '../../../secrets.js';  
+import { getTokenCountAsync } from '../../../tokenizers.js';
+import { getRegexedString, runRegexScript, regex_placement} from "../../regex/engine.js"; // engine.js에서 필요한 함수 임포트
+// 확장 이름(폴더 이름과 맞춤) 및 경로 설정
 const extensionName = "Reactive-Character-Profile";
 const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`;
-const extensionSettings = extension_settings[extensionName];
-const defaultSettings = {};
 
-document.addEventListener("DOMContentLoaded", function() {
-  const toggleButton = document.getElementById("drawer-toggle");
-  const settingsContent = document.getElementById("settings-content");
-  const toggleIcon = toggleButton.querySelector(".inline-drawer-icon");
-
-  toggleButton.addEventListener("click", function() {
-    settingsContent.classList.toggle("hidden");
-    settingsContent.classList.toggle("visible"); 
-    toggleIcon.classList.toggle("fa-circle-chevron-down");
-    toggleIcon.classList.toggle("fa-circle-chevron-up");
-  });
-});
-
-// document.getElementById("use_main_api").addEventListener("change", function() {
-//   const disabled = this.checked;
-//   document.getElementById("llm_provider").disabled = disabled;
-//   document.getElementById("llm_model").disabled = disabled;
-//   document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
-// });
-// 설정을 불러오거나 기본값으로 초기화
-async function loadSettings() {
-  extension_settings[extensionName] = extension_settings[extensionName] || {};
-  if (Object.keys(extension_settings[extensionName]).length === 0) {
-    Object.assign(extension_settings[extensionName], defaultSettings);
+let extensionSettings = extension_settings[extensionName];
+// 프로필 관련 데이터를 prompt.json에서 불러옴
+async function loadPromptJson() {
+  try {
+    const response = await fetch(`${extensionFolderPath}/prompt.json`);
+    const jsonData = await response.json();
+    let profileHtml = jsonData.profile_html;
+    if (typeof profileHtml === 'string' && profileHtml.endsWith('.html')) {
+      const htmlResponse = await fetch(`${extensionFolderPath}/${profileHtml}`);
+      if (htmlResponse.ok) {
+        profileHtml = await htmlResponse.text();
+      }
+    }
+    return {
+      profile_regex: jsonData.profile_regex,
+      profile_html: profileHtml,
+      profile_prompt: jsonData.profile_prompt
+    };
+  } catch (error) {
+    return {
+      profile_regex: '',
+      profile_html: '',
+      profile_prompt: ''
+    };
   }
-
-  $("#use_main_api").prop("checked", extension_settings[extensionName].use_main_api).trigger("input");
-  $("#llm_provider").val(extension_settings[extensionName].llm_provider).trigger("change");
-  $("#llm_model").val(extension_settings[extensionName].llm_model).trigger("change");
-  $("#update_frequency").val(extension_settings[extensionName].update_frequency).trigger("input");
 }
-
-// 메인 API 체크박스 변경 시
-function onMainApiToggle(event) {
-  const value = Boolean($(event.target).prop("checked"));
-  extension_settings[extensionName].use_main_api = value;
-  $("#llm_provider, #llm_model, .parameter-settings input").prop("disabled", value);
-  saveSettingsDebounced();
+if (!extensionSettings) {
+    extensionSettings = {};
+    extension_settings[extensionName] = extensionSettings;
 }
+const context = getContext();
+const chat = context.chat;
+const defaultSettings = {
+  use_main_api: false,
+  profile_provider: 'openai',
+  profile_model: 'chatgpt-4o-latest',
+  provider_model_history: {
+    openai: 'chatgpt-4o-latest',
+    claude: 'claude-3-7-sonnet-20250219',
+    cohere: 'command-r-plus',
+    makersuite: 'gemini-2.0-pro-exp',
+    deepseek: 'deepseek-reasoner'
+  },
 
-// LLM 제공자 변경 시
-function onProviderChange(event) {
-  const value = $(event.target).val();
-  extension_settings[extensionName].llm_provider = value;
-  saveSettingsDebounced();
-}
-
-// LLM 모델 변경 시
-function onModelChange(event) {
-  const value = $(event.target).val();
-  extension_settings[extensionName].llm_model = value;
-  saveSettingsDebounced();
-}
-
-// 업데이트 주기 변경 시
-function onUpdateFrequencyChange(event) {
-  const value = parseFloat($(event.target).val());
-  extension_settings[extensionName].update_frequency = value;
-  saveSettingsDebounced();
-}
-
-// 확장 로드 시 실행
-jQuery(async () => {
-  const settingsHtml = await $.get(`${extensionFolderPath}/index.html`);
-  $("#extensions_settings").append(settingsHtml);
-
-  // 이벤트 리스너 추가
-  $("#use_main_api").on("input", onMainApiToggle);
-  $("#llm_provider").on("change", onProviderChange);
-  $("#llm_model").on("change", onModelChange);
-  $("#update_frequency").on("input", onUpdateFrequencyChange);
-
-  // 설정 불러오기
-  loadSettings();
-});
-
-// 전역 변수: stat 색상은 최초 API 호출 시 결정되어 이후에도 동일하게 사용
-let fixedStatColor = null;
-
-// 예시 캐릭터 데이터 (실제 환경에서는 chat summary, description 등에서 가져옴)
-const characterData = {
-  name: "홍길동 | 25",
-  time: "월요일 | 14:30",
-  profileImage: "https://files.catbox.moe/1tx23d.JPG",
-  // 초기 기분, 관계, 생각은 기본값으로 설정 (이후 API로 업데이트)
-  moods: [ { emoji: "😊", name: "행복" }, { emoji: "🤔", name: "호기심" } ],
-  relationship: "짜증나는 애송이",
-  thoughts: "User에 대한 생각을 적는 영역입니다... <span class='strikethrough'>지워진 부분</span>",
-  // description 필드는 캐릭터의 기본 persona sheet 내용
-  description: "이 캐릭터는 어두운 과거와 피로, 분노가 섞여 있는 복합적인 감정을 지니고 있다.",
-  affection: 30, // -100 ~ 100 범위
-  // stat 특성은 최대 3개; 초기 기본값은 임의로 설정
-  stats: [
-    { emoji: "💪", name: "힘", value: 50 },
-    { emoji: "🧠", name: "지능", value: 50 },
-    { emoji: "🏃", name: "민첩성", value: 50 }
-  ]
+  parameters: {
+    openai: {
+      max_length: 1000,
+      temperature: 0.7,
+      frequency_penalty: 0.2,
+      presence_penalty: 0.5,
+      top_p: 0.99
+    },
+    claude: {
+      max_length: 1000,
+      temperature: 0.7,
+      top_k: 0,
+      top_p: 0.99
+    },
+    cohere: {
+      max_length: 1000,
+      temperature: 0.7,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+      top_k: 0,
+      top_p: 0.99
+    },
+    google: {
+      max_length: 1000,
+      temperature: 0.7,
+      top_k: 0,
+      top_p: 0.99
+    },
+    deepseek: {
+      max_length: 1000,
+      temperature: 0.7,
+      top_k: 0,
+      top_p: 0.99
+    }
+  },
 };
+let isSettingsLoaded = false;
 
-document.addEventListener("DOMContentLoaded", async () => {
-  updateCharacterInfo();
-  updateAffection(characterData.affection);
-  updateStats(characterData.stats);
-  // chat summary 기반으로 기분 및 stat 특성 제안을 업데이트 (필요 시)
-  await suggestMoodKeywords();
-  await suggestStatTraits();
-});
+async function loadSettings() {
+  const promptDefaults = await loadPromptJson();
+  Object.assign(extensionSettings, promptDefaults);
+  // 추가적으로 필요한 기본값 설정
+  if (extensionSettings.use_main_api === undefined) {
+    extensionSettings.use_main_api = false;
+  }
+  if (!extensionSettings.update_interval) {
+    extensionSettings.update_interval = 1;
+  }
+  // defaultSettings에 promptDefaults 반영
+  defaultSettings.profile_regex = promptDefaults.profile_regex;
+  defaultSettings.profile_prompt = promptDefaults.profile_prompt;
+  defaultSettings.profile_html = promptDefaults.profile_html;
 
-function updateCharacterInfo() {
-  document.getElementById("character-name").textContent = characterData.name;
-  document.getElementById("character-time").textContent = characterData.time;
-  document.getElementById("profile-image").src = characterData.profileImage;
-  
-  // 기분 태그 업데이트 (초기값)
-  // 기분 태그 업데이트 (초기값)
-  const moodContainer = document.getElementById("mood-tags");
-  moodContainer.innerHTML = "";
-  characterData.moods.forEach(m => {
-      const tag = document.createElement("div");
-      tag.className = "mood-tag";
-      tag.textContent = m.name ? `${m.emoji} ${m.name}` : m;
-      moodContainer.appendChild(tag);
-  });
-  
-  // 관계 텍스트 업데이트
-  document.getElementById("relationship-doodle").textContent = characterData.relationship;
-  
-  // 생각 영역 업데이트
-  document.getElementById("thoughts-content").innerHTML = characterData.thoughts;
-}
+  // extensionSettings를 defaultSettings로 완전히 초기화
+  Object.assign(extensionSettings, defaultSettings);
 
-
-// Mood tags 애니메이션 효과 추가
-function applyMoodTagEffects() {
-  document.querySelectorAll(".mood-tag").forEach(tag => {
-      tag.style.transition = "transform 0.3s ease-in-out, background-color 0.3s ease-in-out, color 0.3s ease-in-out";
-      tag.addEventListener("mouseenter", function () {
-          this.style.transform = "translateY(-3px) scale(1.05)";
-          this.style.backgroundColor = "#ffd700";
-          this.style.color = "#000";
-      });
-
-      tag.addEventListener("mouseleave", function () {
-          this.style.transform = "translateY(0) scale(1)";
-          this.style.backgroundColor = "";
-          this.style.color = "";
-      });
-  });
-}
-// 적용
-document.addEventListener("DOMContentLoaded", applyMoodTagEffects);
-
-function updateAffection(affection) {
-  const hearts = document.querySelectorAll("#hearts-container .heart");
-  const tooltip = document.getElementById("heart-tooltip");
-  tooltip.textContent = `${affection}/100`;
-
-  if (affection >= 0) {
-    const effective = (affection / 100) * 5;
-    hearts.forEach((heart, i) => {
-      heart.className = "heart";
-      heart.style.removeProperty("--fill-percent");
-      if (effective >= i + 1) {
-        heart.classList.add("filled");
-      } else if (effective > i) {
-        heart.classList.add("partial");
-        heart.style.setProperty("--fill-percent", `${(effective - i) * 100}%`);
-      }
-    });
-  } else {
-    const effective = (Math.abs(affection) / 100) * 5;
-    hearts.forEach((heart, i) => {
-      heart.className = "heart";
-      heart.style.removeProperty("--fill-percent");
-      if (effective >= i + 1) {
-        heart.classList.add("broken");
-      } else if (effective > i) {
-        heart.classList.add("partial-broken");
-        heart.style.setProperty("--fill-percent", `${(effective - i) * 100}%`);
-      }
-    });
+  if (!extensionSettings.parameters) {
+      extensionSettings.parameters = defaultSettings.parameters;
+  }
+  if (!extensionSettings.provider_model_history) {
+      extensionSettings.provider_model_history = defaultSettings.provider_model_history;
   }
 
-  // 호감도 창 효과 적용
-  const heartsContainer = document.getElementById("hearts-container");
-  heartsContainer.addEventListener("mouseenter", function () {
-    tooltip.style.opacity = "1";
-    tooltip.style.visibility = "visible";
-    tooltip.style.transition = "opacity 0.3s ease-in-out, transform 0.3s ease-in-out";
-    tooltip.style.transform = "translateY(-5px)";
-    hearts.forEach((heart, index) => {
-      heart.style.transform = "translateY(-3px)";
-      heart.style.transition = `transform 0.3s ease ${index * 0.05}s`;
-    });
-  });
+  // DOM 요소 준비 확인
+  await new Promise(resolve => setTimeout(resolve, 0)); // 최소 지연으로 DOM 준비 대기
+  const currentProvider = extensionSettings.profile_provider;
 
-  heartsContainer.addEventListener("mouseleave", function () {
-    tooltip.style.opacity = "0";
-    tooltip.style.visibility = "hidden";
-    tooltip.style.transform = "translateY(0)";
-    hearts.forEach(heart => {
-      heart.style.transform = "translateY(0)";
-    });
-  });
+  // textarea 및 UI 설정
+  $('#profile_provider').val(currentProvider);
+  $('#profile_prompt_chat').val(extensionSettings.profile_prompt_chat);
+  $('#profile_prompt_input').val(extensionSettings.profile_prompt_input);
+  
+  $('#profile_regex').val(extensionSettings.profile_regex);
+  $('#profile_html').val(extensionSettings.profile_html);
+  $('#profile_prompt').val(extensionSettings.profile_prompt);
+
+  saveSettingsDebounced();
+  updateParameterVisibility(currentProvider);
+  loadParameterValues(currentProvider);
+  updateModelList();
+  isSettingsLoaded = true;
 }
 
-function updateStats(stats) {
-  const statContainer = document.getElementById("stat-container");
-  statContainer.innerHTML = "";
-  stats.forEach(st => {
-    const statItem = document.createElement("div");
-    statItem.className = "stat-item";
-    statItem.innerHTML = `
-      <div class="stat-header">
-        <span class="stat-name">${st.emoji} ${st.name}</span>
-        <span class="stat-value">${st.value}/100</span>
-      </div>
-      <div class="stat-bar" title="${st.value}/100">
-        <div class="stat-bar-fill" style="width: ${st.value}%; background-color: ${st.color || fixedStatColor || '#a66afc'}"></div>
-        <div class="stat-tooltip">${st.value}/100</div>
-      </div>
-    `;
-    statContainer.appendChild(statItem);
-  });
+// 파라미터 섹션 표시/숨김
+function updateParameterVisibility(provider) {
+    // 모든 파라미터 그룹 숨기기
+    $('.parameter-group').hide();
+    // 선택된 공급자의 파라미터 그룹만 표시
+    $(`.${provider}_params`).show();
 }
-setTimeout(() => {
-  document.querySelectorAll(".stat-item").forEach(stat => {
-      stat.style.transition = "transform 0.3s ease-in-out";
-      stat.addEventListener("mouseenter", function () {
-          this.style.transform = "translateY(-5px)";
-      });
-      stat.addEventListener("mouseleave", function () {
-          this.style.transform = "translateY(0)";
-      });
-  });
-}, 100);
-
-document.addEventListener("DOMContentLoaded", () => {
-  const profileImage = document.getElementById("profile-image");
-
-  // 이미지 로드 완료 후 크기 조절
-  profileImage.onload = function () {
-      let maxWidth = 120; // 고정 너비
-      let maxHeight = 160; // 고정 높이
-
-      this.style.width = maxWidth + "px";
-      this.style.height = maxHeight + "px";
-      this.style.objectFit = "cover"; // 비율을 유지하면서 꽉 차도록 설정
-      this.style.objectPosition = "center"; // 중앙 정렬
-      this.style.borderRadius = "10px"; // 모서리 둥글게
-      this.style.display = "block";
-      this.style.margin = "0 auto";
-      this.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.2)"; // 기본 그림자 효과
-   
-      this.style.transition = "transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out"; // 부드러운 효과 속도 증가
-     };
-
-    // 이미지 호버 효과 추가
-    profileImage.addEventListener("mouseenter", function () {
-      this.style.transform = "translateY(-3px) scale(1.1)";
-      this.style.boxShadow = "0 8px 20px rgba(0, 0, 0, 0.3)";
-  });
-
-  profileImage.addEventListener("mouseleave", function () {
-      this.style.transform = "translateY(0) scale(1)";
-      this.style.boxShadow = "0 4px 10px rgba(0, 0, 0, 0.2)";
-  });
-  // 이미지 경로 설정
-  profileImage.src = "https://files.catbox.moe/1tx23d.JPG"; // 예제 이미지
-});
-
-
-// document.querySelector(".profile-image-container").style.marginRight = "20px";
-// document.querySelector(".info-area").style.marginLeft = "20px";
-// document.querySelector(".hearts-container").style.marginRight = "20px";
-// document.querySelector(".relationship-doodle").style.marginLeft = "20px";
-// 현재 채팅 내용을 간략히 합치는 함수 (예시: 최근 5개의 메시지를 연결)
-function getChatSummary() {
+// 메모리 컨텍스트 설정 (summary.js에서 가져옴)
+function setMemoryContext(value, saveToMessage = false, index = null) {
+  setExtensionPrompt(
+      extensionName,
+      value,
+      extension_prompt_types.IN_PROMPT,
+      0, // 최하단 보장
+      false,
+      extension_prompt_roles.SYSTEM
+  );
   const context = getContext();
-  if (!context.chat || context.chat.length === 0) return "";
-  // 최근 5개 메시지를 합침
-  const recentMessages = context.chat.slice(-5).map(m => m.mes).filter(Boolean);
-  return recentMessages.join("\n");
+  if (saveToMessage && context.chat.length) {
+      const idx = index ?? context.chat.length - 2;
+      const mes = context.chat[idx < 0 ? 0 : idx];
+      if (!mes.extra) mes.extra = {};
+      mes.extra.memory = value;
+      saveSettingsDebounced();
+  }
+}
+// MAIN API 프롬프트 설정
+function setupMainApiPrompt() {
+  if (extensionSettings.use_main_api) {
+      // 프로필 프롬프트를 프롬프트 체인 최하단에 IN_PROMPT, SYSTEM 역할로 등록
+      setExtensionPrompt(
+          extensionName, 
+          extensionSettings.profile_prompt, 
+          extension_prompt_types.IN_PROMPT, 
+          MAX_INJECTION_DEPTH, // 최하단
+          false, 
+          extension_prompt_roles.SYSTEM
+      );
+  }
 }
 
-// 1. 현재 채팅을 기반으로 기분 키워드 3가지를 추출하는 함수
-async function suggestMoodKeywords() {
-  const chatSummary = getChatSummary();
-  const prompt = "아래 대화 내용을 참고하여 캐릭터의 현재 기분을 나타내는 3가지 키워드를 JSON 배열 형식으로 반환해줘. 예시: [\"행복\", \"호기심\", \"😫 한숨\"]. 대화 내용:\n" + chatSummary;
-  try {
-    const result = await llmTranslate(chatSummary, prompt);
-    let keywords = [];
-    try {
-      keywords = JSON.parse(result);
-    } catch (e) {
-      keywords = result.split(/,|\n/).map(s => s.trim()).filter(s => s);
-    }
-    if (keywords.length !== 3) {
-      keywords = keywords.slice(0, 3);
-      while (keywords.length < 3) {
-        keywords.push("기분" + (keywords.length + 1));
-      }
-    }
-    // 업데이트: characterData.moods를 문자열 배열로 갱신
-    characterData.moods = keywords;
-    // 업데이트된 기분 태그 반영
-    const moodContainer = document.getElementById("mood-tags");
-    moodContainer.innerHTML = "";
-    keywords.forEach(k => {
-      const tag = document.createElement("div");
-      tag.className = "mood-tag";
-      tag.textContent = k;
-      moodContainer.appendChild(tag);
+
+// 선택된 공급자의 파라미터 값을 입력 필드에 로드
+function loadParameterValues(provider) {
+    const params = extensionSettings.parameters[provider];
+    if (!params) return;
+    
+    // 모든 파라미터 입력 필드 초기화
+    $(`.${provider}_params input`).each(function() {
+        const input = $(this);
+        const paramName = input.attr('id').replace(`_${provider}`, '');
+        
+        if (params.hasOwnProperty(paramName)) {
+            const value = params[paramName];
+            
+            // 슬라이더, 입력 필드 모두 업데이트
+            if (input.hasClass('neo-range-slider')) {
+                input.val(value);
+                input.next('.neo-range-input').val(value);
+            } else if (input.hasClass('neo-range-input')) {
+                input.val(value);
+                input.prev('.neo-range-slider').val(value);
+            }
+        }
     });
-  } catch (error) {
-    console.error("기분 키워드 제안 실패:", error);
-  }
-}
-
-// 2. 현재 채팅을 기반으로 stat 특성 3가지를 추출하는 함수
-async function suggestStatTraits() {
-  const chatSummary = getChatSummary();
-  const prompt = "아래 대화 내용을 참고하여 캐릭터의 상태창에 표시할 3가지 스탯 특성을 제시해줘. 각 특성은 이모지와 특성 이름(예: \"😪 피로도\")로 표현되어야 하며, JSON 배열 형식으로 반환해줘. 대화 내용:\n" + chatSummary;
-  try {
-    const result = await llmTranslate(chatSummary, prompt);
-    let traits = [];
-    try {
-      traits = JSON.parse(result);
-    } catch (e) {
-      traits = result.split(/,|\n/).map(s => s.trim()).filter(s => s);
-    }
-    if (traits.length !== 3) {
-      traits = traits.slice(0, 3);
-      while (traits.length < 3) {
-        traits.push("특성" + (traits.length + 1));
-      }
-    }
-    // stat 색상은 최초 제안 시 결정
-    if (!fixedStatColor) {
-      fixedStatColor = "#a66afc";
-    }
-    // 제안된 stat 특성을 stat 객체 배열로 변환 (기본 value 50)
-    const suggestedStats = traits.map(trait => {
-      const parts = trait.split(" ");
-      return {
-        emoji: parts[0] || "",
-        name: parts.slice(1).join(" ") || trait,
-        value: 50,
-        color: fixedStatColor
-      };
+    
+    // 공통 파라미터 업데이트
+    ['max_length', 'temperature'].forEach(param => {
+        if (params.hasOwnProperty(param)) {
+            const value = params[param];
+            const input = $(`#${param}`);
+            if (input.length) {
+                input.val(value);
+                input.prev('.neo-range-slider').val(value);
+            }
+        }
     });
-    characterData.stats = suggestedStats;
-    updateStats(suggestedStats);
-  } catch (error) {
-    console.error("스탯 특성 제안 실패:", error);
+}
+// 선택된 공급자의 파라미터 값을 저장
+function saveParameterValues(provider) {
+    const params = {...extensionSettings.parameters[provider]};
+    
+    // 공통 파라미터 저장
+    params.max_length = parseInt($('#max_length').val());
+    params.temperature = parseFloat($('#temperature').val());
+    
+    // 공급자별 파라미터 저장
+    $(`.${provider}_params input.neo-range-input`).each(function() {
+        const paramName = $(this).attr('id').replace(`_${provider}`, '');
+        params[paramName] = parseFloat($(this).val());
+    });
+    
+    extensionSettings.parameters[provider] = params;
+    saveSettingsDebounced();
+}
+// 공급자별 특정 파라미터 추출
+function getProviderSpecificParams(provider, params) {
+    switch(provider) {
+        case 'openai':
+            return {
+                frequency_penalty: params.frequency_penalty,
+                presence_penalty: params.presence_penalty,
+                top_p: params.top_p
+            };
+        case 'claude':
+            return {
+                top_k: params.top_k,
+                top_p: params.top_p
+            };
+        case 'cohere':
+            return {
+                frequency_penalty: params.frequency_penalty,
+                presence_penalty: params.presence_penalty,
+                top_k: params.top_k,
+                top_p: params.top_p
+            };
+        case 'google':
+            return {
+                top_k: params.top_k,
+                top_p: params.top_p
+            };
+        case 'deepseek':
+          return {
+              top_k: params.top_k,
+              top_p: params.top_p
+          };        
+        case 'openrouter':
+          return {
+              frequency_penalty: params.frequency_penalty,
+              presence_penalty: params.presence_penalty,
+              top_k: params.top_k,
+              top_p: params.top_p
+          };
+        default:
+            return {};
+    }
+}
+// provider에 따른 모델 목록 가져오기
+function getModelListForProvider(provider) {
+  // provider와 select ID 매핑
+  const selectIdMapping = {
+      'openai': settingsToUpdate.openai_model[0],       // '#model_openai_select'
+      'claude': settingsToUpdate.claude_model[0],       // '#model_claude_select'
+      'google': settingsToUpdate.google_model[0], // Makersuite (Google)
+      'cohere': settingsToUpdate.cohere_model[0],       // '#model_cohere_select'
+      'deepseek': settingsToUpdate.deepseek_model[0], 
+      'openrouter': settingsToUpdate.openrouter_model[0],            // deepseek은 settingsToUpdate에 없으므로 추정
+  };
+
+  const selectId = selectIdMapping[provider];
+  if (selectId) {
+      const selectElement = document.querySelector(selectId);
+      if (selectElement) {
+          const options = Array.from(selectElement.querySelectorAll('option:not([disabled])'));
+          const models = options.map(option => option.value).filter(value => value);
+          return Array.from(new Set(models)); // 중복 제거
+      }
+  }
+  // DOM에서 모델 목록을 찾을 수 없을 경우 기본 정적 목록
+  const fallbackModels = {
+      'openai': [
+          'chatgpt-4o-latest',
+          'gpt-4o',
+          'gpt-4o-mini',
+          'gpt-4-turbo',
+          'gpt-3.5-turbo',
+      ],
+      'claude': [
+          'claude-3-5-sonnet-latest',
+          'claude-3-opus-latest',
+          'claude-3-haiku-latest',
+          'claude-2.1',
+      ],
+      'google': [
+          'gemini-1.5-pro-latest',
+          'gemini-1.5-flash-latest',
+          'gemini-1.0-pro',
+      ],
+      'cohere': [
+          'command-r-plus',
+          'command-r',
+          'c4ai-aya-expanse-8b',
+      ],
+      'deepseek': [
+          'deepseek-coder',
+          'deepseek-chat',
+      ],
+      'openrouter': [
+
+          ''
+      ]
+  };
+
+  let models = fallbackModels[provider] || [];
+  // getChatCompletionModel로 현재 모델 추가 (선택적 보완)
+  const sourceMapping = {
+      'openai': chat_completion_sources.OPENAI,
+      'claude': chat_completion_sources.CLAUDE,
+      'google': chat_completion_sources.MAKERSUITE,
+      'cohere': chat_completion_sources.COHERE,
+      'deepseek': chat_completion_sources.DEEPSEEK,
+  };
+  const currentModel = sourceMapping[provider] ? getChatCompletionModel(sourceMapping[provider]) : null;
+  if (currentModel && !models.includes(currentModel)) {
+      models.push(currentModel);
+  }
+  return Array.from(new Set(models.filter(model => model)));
+}
+// 모델 목록 업데이트 함수
+async function updateModelList() {
+  const provider = $('#profile_provider').val();
+  const modelSelect = $('#profile_model');
+  modelSelect.empty();
+  // provider에 따른 모델 목록 가져오기
+  const providerModels = getModelListForProvider(provider);
+  // 모델 목록이 없으면 기본값으로 현재 모델 사용
+  if (!providerModels.length) {
+      const mappedSource = {
+          'openai': chat_completion_sources.OPENAI,
+          'claude': chat_completion_sources.CLAUDE,
+          'google': chat_completion_sources.MAKERSUITE,
+          'cohere': chat_completion_sources.COHERE,
+          'deepseek': chat_completion_sources.DEEPSEEK,
+      }[provider];
+      const currentModel = mappedSource ? getChatCompletionModel(mappedSource) : null;
+      if (currentModel) {
+          providerModels.push(currentModel);
+      }
+  }
+  // 드롭다운에 모델 추가
+  providerModels.forEach(model => {
+      if (model) { // null/undefined 필터링
+          modelSelect.append(`<option value="${model}">${model}</option>`);
+      }
+  });
+  // 마지막으로 사용된 모델 선택 (이력에서 가져옴)
+  const lastUsedModel = extensionSettings.provider_model_history[provider] || providerModels[0];
+  modelSelect.val(lastUsedModel);
+  // 설정 업데이트
+  extensionSettings.profile_model = lastUsedModel;
+  extensionSettings.provider_model_history[provider] = lastUsedModel;
+  saveSettingsDebounced();
+}
+// 공통: Chat API 호출 (provider, 파라미터 등은 loadSettings에서 설정된 값 사용)
+async function callChatAPI(messages) {
+  const provider = extensionSettings.profile_provider;
+  const params = extensionSettings.parameters[provider];
+  const parameters = {
+    model: extensionSettings.profile_model,
+    messages: messages,
+    temperature: params.temperature,
+    max_tokens: params.max_length,
+    stream: false,
+    chat_completion_source: provider,
+    // provider별 추가 파라미터 처리 생략
+  };
+  const apiKey = secret_state[SECRET_KEYS[provider.toUpperCase()]];
+  if (!apiKey) throw new Error(`No API key for provider: ${provider}`);
+  const response = await fetch('/api/backends/chat-completions/generate', {
+    method: 'POST',
+    headers: { ...getRequestHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(parameters)
+  });
+  if (!response.ok) throw new Error(`Chat API 호출 실패: ${await response.text()}`);
+  const data = await response.json();
+  return extractResult(provider, data);
+}
+// provider별 결과 추출 함수
+function extractResult(provider, data) {
+  switch (provider) {
+    case 'openai': return data.choices?.[0]?.message?.content?.trim();
+    case 'claude': return data.content?.[0]?.text?.trim();
+    case 'google': return data.candidates?.[0]?.content?.trim() || data.text?.trim();
+    case 'cohere': return data.message?.content?.[0]?.text?.trim() || data.generations?.[0]?.text?.trim();
+    case 'deepseek': return data.message?.content?.trim();
+    default: throw new Error(`Unsupported provider: ${provider}`);
+  }
+}
+// 기타 API 사용 시 상태창 프롬프트 호출 함수
+async function getProfileStatusText() {
+    const provider = extensionSettings.profile_provider;
+    const model = extensionSettings.profile_model;
+    const params = extensionSettings.parameters[provider];
+    const messages = [{ role: 'system', content: extensionSettings.profile_prompt }];
+    const parameters = {
+        model: model,
+        messages: messages,
+        temperature: params.temperature,
+        max_tokens: params.max_length,
+        stream: false,
+        chat_completion_source: provider,
+    };
+    const headers = { ...getRequestHeaders(), 'Content-Type': 'application/json' };
+    const response = await fetch('/api/backends/chat-completions/generate', {
+         method: 'POST',
+         headers: headers,
+         body: JSON.stringify(parameters)
+    });
+    if (!response.ok) {
+         throw new Error('Failed to get profile status text');
+    }
+    const data = await response.json();
+    return extractResult(provider, data);
+}
+// 응답 처리 (수정된 버전)
+function processResponse(response, mesId) {
+  const regex = new RegExp(extensionSettings.profile_regex, 'g');
+  let processed = getRegexedString(response, regex_placement.AI_OUTPUT, { isMarkdown: false });
+  let html = processed.replace(regex, extensionSettings.profile_html);
+
+  if (!extensionSettings.use_main_api) {
+      getProfileStatusText().then(profileResp => {
+          const processedProfile = getRegexedString(profileResp, regex_placement.AI_OUTPUT, { isMarkdown: false });
+          const htmlProfile = processedProfile.replace(regex, extensionSettings.profile_html);
+          const combinedHtml = html + htmlProfile;
+          updateMessageBlock(mesId, combinedHtml);
+      }).catch(err => {
+          console.error('Profile status update failed:', err);
+      });
+  } else {
+      appendProfileHTML(html, mesId);
+  }
+  return html;
+}
+// HTML 추가
+function appendProfileHTML(html, mesId) {
+  const $message = $(`#chat .mes[mesid="${mesId}"]`);
+  if ($message.length) {
+      $message.append(`<div class="profile-html">${html}</div>`);
   }
 }
 
-/* 
-  llmTranslate 함수는 기존 API 키를 활용해 호출하는 방식입니다.
-  여기서는 모의 응답으로 stat 및 기분 제안을 반환하도록 처리합니다.
-  실제 구현 시 secret_state, SECRET_KEYS 등을 활용하세요.
-*/
-async function llmTranslate(text, prompt) {
-  // 예시: stat 특성 제안 API의 모의 응답
-  if (prompt.includes("스탯 특성")) {
-    return '["😪 피로도", "🤬 분노", "😡 분개"]';
-  }
-  if (prompt.includes("현재 기분")) {
-    return '["행복", "호기심", "😫 한숨"]';
-  }
-  // 그 외엔 text 그대로 반환 (간단 모의 처리)
-  return text;
-}
-
-/* 
-  나머지 기존 summarization, 설정, 이벤트 관련 함수들은 이 확장에서 사용하지 않으므로 생략합니다.
-  (실제 확장에 포함된 코드를 참고하여 필요한 부분만 추가하세요.)
-*/
-document.addEventListener("DOMContentLoaded", function() {
-  const toggleButton = document.getElementById("drawer-toggle");
-  const settingsContent = document.getElementById("settings-content");
-  const toggleIcon = toggleButton.querySelector(".inline-drawer-icon");
-
-  toggleButton.addEventListener("click", function() {
-      settingsContent.classList.toggle("hidden");
-      settingsContent.classList.toggle("visible");
-      toggleIcon.classList.toggle("fa-circle-chevron-down");
-      toggleIcon.classList.toggle("fa-circle-chevron-up");
-  });
-
-  document.getElementById("use_main_api").addEventListener("change", function() {
-      const disabled = this.checked;
-      document.getElementById("llm_provider").disabled = disabled;
-      document.getElementById("llm_model").disabled = disabled;
-      document.querySelectorAll(".parameter-settings input").forEach(input => input.disabled = disabled);
-  });
-});
