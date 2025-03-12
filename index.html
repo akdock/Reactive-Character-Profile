@@ -1,14 +1,10 @@
 <div class="profile_ext_settings">
   <div class="inline-drawer">
-    <div class="inline-drawer-toggle inline-drawer-header" id="drawer-toggle">
-      <b data-i18n="ext_profile_title">프로필 확장</b>
-      <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
+    <div class="inline-drawer-toggle inline-drawer-header">
+      <b>프로필 확장</b>
+      <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
     </div>
     <div class="inline-drawer-content" id="settings-content">
-    
-      <button class="menu_button">
-        <span data-i18n="api_test">테스트 버튼</span>
-      </button>
     
       <label for="profile_provider">프로필 제공자</label>
       <select id="profile_provider">
@@ -17,6 +13,7 @@
         <option value="google">GoogleAI</option>
         <option value="cohere">Cohere</option>
         <option value="deepseek">Deepseek</option>
+        <option value="openrouter">Openrouter</option>
       </select>
     
       <label for="profile_model">모델 선택:</label>
@@ -132,7 +129,19 @@
           <input type="number" id="top_p_deepseek_input" class="neo-range-input" data-param="top_p" min="0" max="1" step="0.01">
         </div>
       </div>
+      <!-- 프리셋 저장/불러오기 UI -->
+      <div class="preset-controls">
+        <label for="profile_preset">프리셋 불러오기</label>
+        <div class="flex-container">
+          <select id="profile_preset" class="flex1 text_pole"> 
+            <!-- 옵션은 JS에서 자동 업데이트됩니다. -->
+          </select>
+          <div id="save_preset_btn" class="menu_button"> 
+            <i class="fa-solid fa-save"></i>
+          </div>
+      </div>
 
+      </div>
       <label for="profile_regex">정규식 조절</label>
       <textarea id="profile_regex" placeholder="기본 정규식 패턴"></textarea>
 

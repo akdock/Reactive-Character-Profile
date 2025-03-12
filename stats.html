@@ -1,0 +1,106 @@
+```
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>캐릭터 상태창</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Cedarville+Cursive&family=Reenie+Beanie&family=Rock+Salt&display=swap" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/arthurmorgancursivehandwriting" rel="stylesheet">
+    <!--/* 기본 폰트: Noto Sans KR */-->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap">
+</head>
+<body>
+    <div class="character-card">
+        <div class="card-header">
+          <div class="header-left"> {{char}} | $1</div>
+          <div class="header-right">$2 | $3</div>
+        </div>
+        
+        <div class="card-body">
+          <div class="body1">
+            <div class="profile-image-container">
+              <div class="char_avatar"></div>
+            </div>
+          </div>
+          
+          <div class="info-area">
+            <!-- 기분 섹션 -->
+            <div class="mood-section">
+              <div class="section-title">현재 기분</div>
+              <div class="mood-tags">
+                $4
+              </div>
+            </div>
+            
+            <!-- 호감도 섹션 -->
+            <div class="affection-section">
+              <div class="section-title">호감도</div>
+              <div class="affection-wrapper">
+                <div class="hearts-container">
+                  <div class="heart-tooltip">$5/100</div>
+                  <div class="heart filled"></div>
+                  <div class="heart filled"></div>
+                  <div class="heart partial" style="--fill-percent: 50%"></div>
+                  <div class="heart"></div>
+                  <div class="heart"></div>
+                </div>
+                <div class="relationship-doodle">$6</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="body2">
+          <!-- 생각 섹션 -->
+          <div class="thoughts-section">
+            <div class="section-title">속마음</div>
+            <div class="thoughts-content">$7</div>
+          </div>
+          
+          <!-- 스탯 섹션 -->
+          <div class="stats-section">
+            <div class="section-title">스탯</div>
+            <div class="stats-contents">
+              <div class="stat-item">
+                <div class="stat-header">
+                  <span>$8 $9</span>
+                  <span>$10/100</span>
+                </div>
+                <div class="stat-bar">
+                  <div class="stat-tooltip">$10%</div>
+                  <div class="stat-bar-fill" style="width: $10%;"></div>
+                </div>
+              </div>
+            
+              <div class="stat-item">
+                <div class="stat-header">
+                  <span>$11 $12</span>
+                  <span>$13/100</span>
+                </div>
+                <div class="stat-bar">
+                  <div class="stat-tooltip">$13%</div>
+                  <div class="stat-bar-fill" style="width: $13%;"></div>
+                </div>
+              </div>
+            
+              <div class="stat-item">
+                <div class="stat-header">
+                  <span>$14 $15</span>
+                  <span>$16/100</span>
+                </div>
+                <div class="stat-bar">
+                  <div class="stat-tooltip">$16%</div>
+                  <div class="stat-bar-fill" style="width: $16%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+</body>
+</html>     
+
+```
